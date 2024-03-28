@@ -4,10 +4,12 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../Models/userModel');
 const Otp = require('../Models/userOtpModel')
+const Expense = require('../Models/expenseModel')
+const Income = require('../Models/incomeModel')
 const { createUserValidator, loginValidator, updateUserVaildator, verifyCodeValidator,
     resendOtpValidator, resetlinkValidator, changePasswordValidator, resetPasswordValidator } = require('../Validator/userValidator');
 const { registrationMail, verficationCodeMail, resetLinkMail } = require('../Shared/mailer');
-
+const { addExpenseValidator, updateExpenseValidator, addIncomeValidator, updateIncomeValidator } = require('../Validator/expenseValidator');
 
 
 
@@ -286,7 +288,7 @@ const resetPasswordLink = asyncHandler(async (req, res) => {
         expirationLink.setMinutes(expirationLink.getMinutes() + 5)
 
         //craft the reset link
-        const resetLink = `http://localhost:3003/api/auth/reset-password?token=${token}&email=${email}`
+        const resetLink = `http://localhost:3003/api/income/reset-password?token=${token}&email=${email}`
 
         //update user table
         user.resetLink = resetLink
@@ -386,6 +388,216 @@ const changePassword = asyncHandler(async (req, res) => {
     }
 });
 
+//Expense tracking
+//Add a new expense
+const addExpense = asyncHandler(async (req, res) => {
+    try {
+        //validate the input
+        const { error, value } = await addExpenseValidator(req.body, { abortEarly: false })
+        if (error) {
+            res.status(400).json(error.message)
+        }
+
+        //extract from the request body
+        const { amount, item, date, category } = req.body;
+
+        //create new expense
+        const expense = new Expense({
+            // user: userId,
+            category, 
+            amount,
+            item,
+            date
+        })
+
+        //save to database
+        await expense.save()
+
+        res.status(200).json({ message: 'expense added' })
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//Get all expense
+const allExpense = asyncHandler(async (req, res) => {
+    try {
+        //find all expenses
+        const expense = await Expense.find()
+
+        res.status(200).json(expense)
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//to get expense for a particular category
+const categoryExpenses = asyncHandler(async (req, res) => {
+    try {
+        //extract the catergory from the request parameter
+        const { category } = req.params
+
+        //find expenses for the catergory
+        const expense = await Expense.find({ category: category})
+
+        res.status(200).json(expense)
+    } catch (error) {
+        throw error
+    }
+});
+
+
+// update expense
+const updateExpense = asyncHandler(async (req, res) => {
+    try {
+        // Validate the input
+        const { error, value } = await updateExpenseValidator(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json(error.message);
+        }
+
+        // Extract expense ID and updated fields from request body
+        const { id } = req.params;
+        const { amount, item, date } = req.body;
+
+        // Find the expense by ID
+        const expense = await Expense.findById(id);
+
+        if (!expense) {
+            return res.status(404).json({ message: 'Expense not found' });
+        }
+
+        // Update 
+        expense.amount = amount;
+        expense.item = item;
+        expense.date = date;
+
+        await expense.save();
+
+        res.status(200).json(expense);
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//delete expense
+const deleteExpense = asyncHandler(async (req, res) => {
+    try {
+        //find expense by Id
+        const { id } = req.params
+        const expense = await Expense.findByIdAndDelete(id)
+
+        if (!expense) {
+            res.status(404).json({ message: 'Cant delete expense' })
+        }
+
+        res.status(200).json({ message: 'expense deleted' })
+
+    } catch (error) {
+        throw error
+    }
+})
+
+
+//Income data
+//Add new income
+const addIncome = asyncHandler(async (req, res) => {
+    try {
+        const { error, value } = await addIncomeValidator(req.body, { abortEarly: false })
+        if (error) {
+            res.status(400).json(error.message)
+        }
+
+        //require fields from request body
+        const { source, amount, month } = req.body;
+
+        //create new income tracker
+        const newIncome = new Income({
+            source,
+            amount,
+            month
+        });
+
+        //save to database
+        await newIncome.save()
+
+        res.status(200).json(newIncome)
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//Get all income
+const allIncome = asyncHandler(async(req, res) => {
+    try {
+        //find all income
+        const income = await Income.find()
+
+        res.status(200).json(income)
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//update Income
+const updateIncome = asyncHandler(async(req, res) => {
+    try {
+        //validate the input
+        const { error, value } = await updateIncomeValidator(req.body, { abortEarly: false })
+        if(error) {
+            res.status(400).json(error.message)
+        }
+
+        const { source, amount, month } = req.body;
+
+        //find the income to be updated
+        const { id } = req.params
+
+        const income = await Income.findById(id)
+        if(!income) {
+            res.status(404).json({ message: 'Income cant be updated'})
+        }
+
+        //update the income
+        income.source = source
+        income.amount = amount
+        income.month = month
+
+        //save to database
+        await income.save()
+
+        res.status(200).json(income)
+
+    } catch (error) {
+       throw error 
+    }
+});
+
+
+//delete user 
+const deleteIncome = asyncHandler(async(req, res) => {
+    try {
+        //find the income by id
+        const { id } = req.params
+
+        const income = await Income.findById(id)
+        if(!income) {
+            res.status(404).json({ message: 'wrong income'})
+        }
+
+        res.status(200).json({ message: 'Income deleted'})
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//Budgeting
 
 
 module.exports = {
@@ -398,5 +610,14 @@ module.exports = {
     resendVerificationCode,
     resetPasswordLink,
     changePassword,
-    resetPassword
+    resetPassword,
+    addExpense,
+    allExpense,
+    categoryExpenses,
+    updateExpense,
+    deleteExpense,
+    addIncome,
+    allIncome,
+    updateIncome,
+    deleteIncome
 }

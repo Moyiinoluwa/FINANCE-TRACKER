@@ -20,7 +20,7 @@ app.use(morgan('tiny'))
 app.use(errorHandler)
 
 //API
-app.use('/api/auth', require('./Routes/authRoutes'))
+app.use('/api/income', require('./Routes/incomeRoutes'))
 
 
 const PORT = process.env.PORT || 3005
