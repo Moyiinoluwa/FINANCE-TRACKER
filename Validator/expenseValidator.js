@@ -32,7 +32,24 @@ const updateIncomeValidator = joi.object({
     month: joi.string().required()
 });
 
+//create budget
+const createBudgetValidator = joi.object({
+    category: joi.string().required(),
+    amount: joi.string().required(),
+    spendingLimit: joi.string().required()
+})
+
+//update budget
+const updateBudgetValidator = joi.object({
+    category: joi.string().required(),
+    amount: joi.string().required()
+})
+
+
+
 exports.addExpenseValidator = Validator(addExpenseValidator)
 exports.updateExpenseValidator = Validator(updateExpenseValidator)
 exports.addIncomeValidator = Validator(addIncomeValidator)
 exports.updateIncomeValidator = Validator(updateIncomeValidator)
+exports.createBudgetValidator = Validator(createBudgetValidator)
+exports.updateBudgetValidator = Validator(updateBudgetValidator)

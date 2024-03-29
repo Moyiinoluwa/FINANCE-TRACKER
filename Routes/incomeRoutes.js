@@ -8,7 +8,7 @@ const validateToken = require('../Middleware/validateToken')
 router.post('/create', Controller.createUser)
 
 //login
-router.post('/login', validateToken, Controller.login)
+router.post('/login',  Controller.login)
 
 //get all user
 router.get('/get', validateToken, Controller.allUsers)
@@ -60,6 +60,24 @@ router.put('/update-income/:id', validateToken, Controller.updateIncome)
 
 //delete income
 router.delete('/delete-income/:id', validateToken, Controller.deleteIncome)
+
+//create bugdet
+router.post('/create-budget', validateToken, Controller.createBudget)
+
+//get all budgert
+router.get('/get-budget', validateToken, Controller.getBugdet)
+
+//update budget
+router.put('/update-budget/:id', validateToken, Controller.updateBudget)
+
+//delete budget
+router.delete('/delete-budget/:id', validateToken, Controller.deleteBugdet)
+
+//count all budget
+router.get('/count-budget', Controller.countBudget)
+
+//spending notification message
+router.get('/notification', Controller.limitNotification)
 
 
 

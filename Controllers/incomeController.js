@@ -6,10 +6,11 @@ const User = require('../Models/userModel');
 const Otp = require('../Models/userOtpModel')
 const Expense = require('../Models/expenseModel')
 const Income = require('../Models/incomeModel')
+const Budget = require('../Models/budgetModel')
 const { createUserValidator, loginValidator, updateUserVaildator, verifyCodeValidator,
     resendOtpValidator, resetlinkValidator, changePasswordValidator, resetPasswordValidator } = require('../Validator/userValidator');
 const { registrationMail, verficationCodeMail, resetLinkMail } = require('../Shared/mailer');
-const { addExpenseValidator, updateExpenseValidator, addIncomeValidator, updateIncomeValidator } = require('../Validator/expenseValidator');
+const { addExpenseValidator, updateExpenseValidator, addIncomeValidator, updateIncomeValidator, createBudgetValidator, updateBudgetValidator } = require('../Validator/expenseValidator');
 
 
 
@@ -598,6 +599,151 @@ const deleteIncome = asyncHandler(async(req, res) => {
 });
 
 //Budgeting
+//Create a budet for each catergory
+const createBudget = asyncHandler(async(req, res) => {
+    try {
+        const { error, value } = await createBudgetValidator(req.body, { abortEarly: false }) 
+        if(error) {
+            res.status(400).json(error.message)
+        }
+
+        //extract fields from request body
+        const { category, amount, spendingLimit} = req.body;
+
+        //check if bugdet exist
+        const { id } = req.params
+
+        const budget = await Budget.findById(id)
+        if(budget) {
+            res.status(401).json({ message: 'budget already exist'})
+        }
+
+        //create new budget
+        const newBudget = new Budget({
+            category,
+            amount,
+            spendingLimit
+        });
+
+        //save to database
+        await newBudget.save()
+
+        res.status(200).json(newBudget)
+
+    } catch (error) {
+        throw error
+    }
+});
+
+
+//Get all budget
+const getBugdet = asyncHandler(async(req, res) => {
+    try {
+        //find all budget created
+        const bugdet = await Budget.find()
+
+        res.status(200).json(bugdet)
+
+    } catch (error) {
+        throw error
+    }
+});
+
+//count all the budget
+const countBudget = asyncHandler(async(req, res) => {
+    try {
+        // count the budgets
+        const budget = await Budget.countDocuments() 
+        if(budget === undefined) {
+            res.status(404).json({ message: 'No budget '})
+        }
+
+        res.status(200).json({ budgetCount: budget})
+
+    } catch (error) {
+        throw error
+    }
+})
+//update budget
+const updateBudget = asyncHandler(async(req, res) => {
+    try {
+        //validate the input
+        const { error, value } = await updateBudgetValidator(req.body, { abortEarly: false }) 
+        if(error) {
+            res.status(400).json(error.message)
+        }
+
+        //extract the required fields from the request body
+        const { category, amount, spendingLimit} = req.body;
+
+        //extract the Id from the request parameter
+        const { id } = req.params
+
+        //find the budget to be updated
+        const budget = await Budget.findById(id)
+        if(!budget) {
+            res.status(404).json({ message: 'cant find budget'})
+        }
+
+        //update budget
+        budget.category = category
+        budget.amount = amount
+        budget.spendingLimit = spendingLimit
+
+        //save to database
+        await budget.save()
+
+        res.status(200).json({ message: 'budget updated'})
+
+    } catch (error) {
+        throw error
+    }
+})
+
+//delete budget
+const deleteBugdet = asyncHandler(async(req, res) => {
+    try {
+        //extract id  from request parameter
+        const { id } = req.params
+
+        //find budget by id 
+        const budget = await Budget.findByIdAndDelete(id)
+        if(!budget) {
+            res.status(404).json({ message: 'cant delete budget'})
+        } else {
+            res.status(200).json({ message: 'bugdet deleted'})
+        }
+    } catch (error) {
+        throw error
+    }
+});
+
+//User get notified if she's almost at the budget spending limit
+const limitNotification = asyncHandler(async(req, res) => {
+    try {
+        //extract the budget id from the request parameter
+        const { id } = req.params
+
+        //find the budget
+        const budget = await Budget.findById(id)
+        if(!budget) {
+            res.status(404).json({ message: 'cant find budget'})
+        }
+
+        const { currentSpending } = req.body;
+
+        //if the user has spent up to 90% of the spending limit set while creating the budget
+        if(currentSpending >= budget.spendingLimit * 0.9) {
+
+            //set a notification to the user
+            res.status(2000).json({ message: 'Almost at the spending limit'})
+        }
+
+    } catch (error) {
+        throw error
+    }
+});
+
 
 
 module.exports = {
@@ -619,5 +765,11 @@ module.exports = {
     addIncome,
     allIncome,
     updateIncome,
-    deleteIncome
+    deleteIncome,
+    createBudget,
+    getBugdet,
+    updateBudget,
+    deleteBugdet,
+    countBudget,
+    limitNotification
 }
