@@ -47,7 +47,7 @@ const createUser = asyncHandler(async (req, res) => {
         const newUser = new User({
             username,
             email,
-            password: hash
+            password: hash,
         });
 
         //save new user to database
@@ -404,7 +404,7 @@ const addExpense = asyncHandler(async (req, res) => {
 
         //create new expense
         const expense = new Expense({
-            // user: userId,
+            user_id: req.user.id,
             category, 
             amount,
             item,
@@ -444,9 +444,10 @@ const categoryExpenses = asyncHandler(async (req, res) => {
         const expense = await Expense.find({ category: category})
 
         res.status(200).json(expense)
+
     } catch (error) {
         throw error
-    }
+    } 
 });
 
 
@@ -517,6 +518,7 @@ const addIncome = asyncHandler(async (req, res) => {
 
         //create new income tracker
         const newIncome = new Income({
+            user_id: req.user.id,
             source,
             amount,
             month
@@ -608,7 +610,7 @@ const createBudget = asyncHandler(async(req, res) => {
         }
 
         //extract fields from request body
-        const { category, amount, spendingLimit} = req.body;
+        const { category, amount, spendingLimit } = req.body;
 
         //check if bugdet exist
         const { id } = req.params
@@ -620,6 +622,7 @@ const createBudget = asyncHandler(async(req, res) => {
 
         //create new budget
         const newBudget = new Budget({
+            user_id: req.user.id,
             category,
             amount,
             spendingLimit

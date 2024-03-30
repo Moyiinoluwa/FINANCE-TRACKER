@@ -2,6 +2,12 @@ const mongoose = require('mongoose')
 
 
 const budgetSchema = mongoose.Schema({
+    user_id: {
+        type: mongoose.Schema.Types.ObjectId,
+      required: true ,
+       ref: 'User'
+  },
+   
     category: {
         type: String,
         required: true
@@ -16,7 +22,7 @@ const budgetSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    
+
 }, {
     timestamps: true
 });

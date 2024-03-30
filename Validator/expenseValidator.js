@@ -42,7 +42,8 @@ const createBudgetValidator = joi.object({
 //update budget
 const updateBudgetValidator = joi.object({
     category: joi.string().required(),
-    amount: joi.string().required()
+    amount: joi.string().required(),
+    spendingLimit: joi.string().required()
 })
 
 
