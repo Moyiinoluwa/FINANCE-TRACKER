@@ -185,13 +185,7 @@ const verifyCode = asyncHandler(async (req, res) => {
             res.status(400).json(error.message)
         }
 
-        const { email, otp } = req.body;
-
-        //check if the email is registered on the otp database
-        const userEmail = await Otp.findOne({ email })
-        if (!userEmail) {
-            res.status(404).json({ message: 'This even did not receive the otp' })
-        }
+        const { otp } = req.body;
 
         //check if the verification code is correct
         const user = await Otp.findOne({ otp })
@@ -209,7 +203,7 @@ const verifyCode = asyncHandler(async (req, res) => {
         }
 
         //find the user linked to the email
-        const usser = await User.findOne({ email })
+        const usser = await User.findOne({ email: user.email })
         if (!usser) {
             res.status(404).json({ message: 'this user is not registered' })
         }
