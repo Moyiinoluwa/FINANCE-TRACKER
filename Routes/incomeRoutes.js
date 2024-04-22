@@ -11,7 +11,7 @@ router.post('/create', Controller.createUser)
 router.post('/login',  Controller.login)
 
 //get all user
-router.get('/get', validateToken, Controller.allUsers)
+router.get('/get',  Controller.allUsers)
 
 //update user
 router.put('/update', validateToken, Controller.updateUser)

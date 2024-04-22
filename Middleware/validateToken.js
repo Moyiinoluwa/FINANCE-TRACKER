@@ -19,6 +19,7 @@ const validateToken = asyncHandler(async (req, res, next) => {
             }
             // If token verification succeeds, attach decoded user information to request object
             req.user = decoded.user
+            console.log(req.user)
             // Call the next middleware function
             next()
         });
