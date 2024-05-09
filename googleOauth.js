@@ -3,6 +3,7 @@ const GoogleStrategy = require('passport-google-oauth2').Strategy;
 
 // Configure Passport to use Google OAuth2 strategy
 passport.use(new GoogleStrategy({
+    const option = [],
     clientID: process.env.GOOGLE_CLIENT_ID, // Google OAuth2 client ID
     clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Google OAuth2 client secret
     callbackURL: "http://localhost:3006/auth/google/callback", // Callback URL after authentication

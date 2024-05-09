@@ -272,7 +272,7 @@ const resetPasswordLink = asyncHandler(async (req, res) => {
         //check if user is registered
         const user = await User.findOne({ email })
         if (!user) {
-            res.status()
+            res.status(404).json({ message: 'user not found'})
         }
 
         //get reset token
